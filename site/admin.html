@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Redeem a gift certificate</title>
+<style>
+  body { font-family:system-ui,sans-serif; max-width:26rem; margin:2rem auto; padding:0 1.25rem; line-height:1.5; }
+  label { display:block; margin:1rem 0 .3rem; font-weight:600; }
+  input { width:100%; box-sizing:border-box; padding:.7rem; font:inherit; border:1px solid #ccc; border-radius:6px; }
+  button { margin:1rem .5rem 0 0; padding:.7rem 1.2rem; font:inherit; border:1px solid #3f6b5c; border-radius:6px; background:#fff; cursor:pointer; }
+  button.primary { background:#3f6b5c; color:#fff; }
+  #out { margin-top:1.25rem; font-weight:600; }
+</style>
+</head>
+<body>
+<h1>Gift certificates</h1>
+<label for="pw">Admin password</label>
+<input id="pw" type="password" autocomplete="current-password">
+<label for="code">Certificate code</label>
+<input id="code" placeholder="XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off">
+<button id="check">Check code</button>
+<button id="redeem" class="primary">Mark as redeemed</button>
+<p id="out" role="status"></p>
+<script>
+  const $ = (id) => document.getElementById(id);
+  async function call(action) {
+    $('out').textContent = 'Working…';
+    try {
+      const res = await fetch('/.netlify/functions/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: $('pw').value, code: $('code').value, action }),
+      });
+      const d = await res.json();
+      const text = {
+        valid: `Valid: $${d.amount}. Not yet used.`,
+        redeemed: `Redeemed: $${d.amount}. This code is now used.`,
+        already_redeemed: `Already used on ${d.redeemed_at ? new Date(d.redeemed_at).toLocaleString() : 'an earlier date'}.`,
+        not_found: 'Code not found. Check the spelling.',
+      };
+      $('out').textContent = d.error || text[d.status] || 'Unexpected server response.';
+    } catch {
+      $('out').textContent = 'Could not reach the server. Please try again.';
+    }
+  }
+  $('check').onclick = () => call('check');
+  $('redeem').onclick = () => call('redeem');
+</script>
+</body>
+</html>

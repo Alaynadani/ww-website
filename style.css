@@ -1,0 +1,72 @@
+/* Wildflower Wellness visual overrides.
+   Edit these tokens first when changing the site's look. */
+:root {
+  --wildflower-night: rgb(5 20 36 / 67%);
+  --wildflower-deep: rgb(11 20 31 / 0.82);
+  --wildflower-panel: rgb(18 33 48 / 0.88);
+  --wildflower-gold: rgb(170 112 62 / 0.92);
+  --wildflower-gold-soft: #c68b4d;
+  --wildflower-ink: #d4e4fa;
+  --wildflower-muted: #c5c6cd;
+  --wildflower-radius: 0.75rem;
+}
+
+body {
+  background: var(--wildflower-night);
+  color: var(--wildflower-ink);
+}
+
+header {
+  border-bottom: 1px solid rgba(233, 195, 73, 0.12);
+}
+
+header a,
+header button,
+main a,
+footer a {
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+main a[href^="#booking-hub"]:hover,
+main a[href^="#services"]:hover {
+  transform: translateY(-2px);
+}
+
+main section {
+  scroll-margin-top: 5rem;
+}
+
+main h1,
+main h2,
+main h3 {
+  text-wrap: balance;
+}
+
+main p {
+  text-wrap: pretty;
+}
+
+footer {
+  border-top: 1px solid rgba(233, 195, 73, 0.12);
+}
+
+@media (max-width: 767px) {
+  header .h-20 {
+    min-height: 5rem;
+  }
+
+  main h1 {
+    font-size: clamp(2.25rem, 11vw, 3.5rem);
+    line-height: 1.1;
+  }
+
+  main h2 {
+    font-size: clamp(1.85rem, 8vw, 2.75rem);
+    line-height: 1.15;
+  }
+
+  main a[href^="#booking-hub"],
+  main a[href^="#services"] {
+    width: 100%;
+  }
+}

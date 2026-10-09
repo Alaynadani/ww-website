@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gift Certificates</title>
+<style>
+  /* Neutral starter styles. Change these variables to match your Stitch design. */
+  :root { --bg:#faf8f5; --ink:#2b2b2b; --accent:#3f6b5c; --line:#d9d4cc; --font:system-ui,sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--font); line-height:1.5; }
+  main { max-width:30rem; margin:0 auto; padding:2rem 1.25rem 4rem; }
+  label { display:block; margin:1.1rem 0 .3rem; font-weight:600; }
+  input, textarea { width:100%; box-sizing:border-box; padding:.7rem; font:inherit; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  .amounts { display:flex; gap:.5rem; flex-wrap:wrap; }
+  .amounts button { flex:1; padding:.7rem; font:inherit; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; }
+  .amounts button[aria-pressed="true"] { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .buy { margin-top:1.5rem; width:100%; padding:.9rem; font:inherit; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:6px; cursor:pointer; }
+  .buy:disabled { opacity:.6; cursor:wait; }
+  #msg { margin-top:1rem; } .ok { color:var(--accent); font-weight:600; } .err { color:#a33; }
+  :focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Give the gift of a massage</h1>
+  <p id="msg" role="status"></p>
+
+  <label for="amount">Amount (USD, $25 to $500)</label>
+  <div class="amounts" id="quick">
+    <button type="button" data-v="50">$50</button>
+    <button type="button" data-v="100">$100</button>
+    <button type="button" data-v="150">$150</button>
+  </div>
+  <input id="amount" type="number" min="25" max="500" step="1" placeholder="Or enter your own amount" style="margin-top:.5rem">
+
+  <label for="rname">Recipient's name</label>
+  <input id="rname" maxlength="100" autocomplete="off">
+
+  <label for="remail">Recipient's email (leave blank to receive it yourself)</label>
+  <input id="remail" type="email" autocomplete="off">
+
+  <label for="note">Personal message (optional)</label>
+  <textarea id="note" rows="3" maxlength="300"></textarea>
+
+  <button class="buy" id="buy">Continue to payment</button>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const msg = $('msg');
+  if (new URLSearchParams(location.search).get('success')) {
+    msg.className = 'ok';
+    msg.textContent = 'Thank you! The gift certificate is on its way by email.';
+  }
+  $('quick').addEventListener('click', (e) => {
+    if (!e.target.dataset.v) return;
+    $('amount').value = e.target.dataset.v;
+    [...$('quick').children].forEach((b) => b.setAttribute('aria-pressed', b === e.target));
+  });
+  $('buy').addEventListener('click', async () => {
+    msg.className = ''; msg.textContent = '';
+    $('buy').disabled = true;
+    try {
+      const res = await fetch('/.netlify/functions/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: $('amount').value,
+          recipientName: $('rname').value,
+          recipientEmail: $('remail').value,
+          message: $('note').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      location.href = data.url;
+    } catch (e) {
+      msg.className = 'err'; msg.textContent = e.message || 'Something went wrong. Please try again.';
+      $('buy').disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
